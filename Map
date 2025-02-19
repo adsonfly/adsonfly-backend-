@@ -1,11 +1,12 @@
 fastify-backend/
 ├── src/
 │   ├── config/               # Configuration files
-│   │   └── database.js       # MongoDB connection setup
+│   │   └──database.js       # MongoDB connection setup
 │   ├── controllers/          # Business logic
 │   │   ├── authController.js # Authentication logic
 │   │   ├── userController.js # User-related logic
-│   │   └── driverController.js # Driver-related logic
+│   │   ├── driverController.js # Driver-related logic
+│   │   └── adminController.js # Admin-related logic
 │   ├── middlewares/          # Middleware functions
 │   │   └── middlewares.js    # Logging, authentication, error handling
 │   ├── models/               # MongoDB schemas
@@ -14,9 +15,21 @@ fastify-backend/
 │   ├── routes/               # API routes
 │   │   ├── authRoutes.js     # Authentication routes
 │   │   ├── userRoutes.js     # User-related routes
-│   │   └── driverRoutes.js   # Driver-related routes
-│   ├── utils/                # Helper functions (optional)
+│   │   ├── driverRoutes.js   # Driver-related routes
+│   │   └── adminRoutes.js    # Admin-related routes
+│   ├── utils/                # Helper functions
+│   │   └── s3.js             # AWS S3 utility
+│   ├── sockets/              # Socket.IO logic
+│   │   └── socket.js         # Socket.IO setup
+│   ├── admin/                # AdminJS setup
+│   │   └── admin.js          # AdminJS configuration
 │   └── app.js                # Fastify initialization
 ├── .env                      # Environment variables
 ├── package.json              # Project dependencies and scripts
 └── README.md                 # Project documentation (optional)
+
+
+
+
+
+

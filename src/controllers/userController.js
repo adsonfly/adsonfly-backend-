@@ -1,5 +1,6 @@
 import User from '../models/user.js';
 
+// Get user profile
 export const getUserProfile = async (request, reply) => {
   try {
     const user = await User.findById(request.user.id).select('-password');
@@ -13,6 +14,7 @@ export const getUserProfile = async (request, reply) => {
   }
 };
 
+// Update user profile
 export const updateUserProfile = async (request, reply) => {
   const { name, email, phone } = request.body;
 
@@ -34,6 +36,7 @@ export const updateUserProfile = async (request, reply) => {
   }
 };
 
+// Delete user account
 export const deleteUser = async (request, reply) => {
   try {
     const user = await User.findByIdAndDelete(request.user.id);

@@ -14,9 +14,11 @@ export const register = async (req, reply) => {
 
     // Create user or driver based on role
     if (role === 'driver') {
-      user = new Driver({ name, phone, email, password });  // No need to hash password here
+     
+      user = new Driver({ name, phone, email, password }); //plain password
     } else {
-      user = new User({ name, phone, email, password });  // No need to hash password here
+      // For users, rely on the User model's pre-save hook
+      user = new User({ name, phone, email, password });
     }
 
     // Save the user
@@ -33,53 +35,80 @@ export const register = async (req, reply) => {
 
 
 // Login function
-export const login = async (req, reply) => {
-  const { phone, password, role } = req.body;
+export const loginUser = async (req, reply) => {
+  const { phone, password } = req.body;
 
-  console.log('Login payload:', { phone, password, role });
+  console.log('User Login payload:', { phone, password });
 
   try {
-    let user;
+    const user = await User.findOne({ phone });
 
-    // Fetch user based on role
-    if (role === 'driver') {
-      user = await Driver.findOne({ phone });
-      console.log('Driver found:', user);
-    } else {
-      user = await User.findOne({ phone });
-      console.log('User found:', user);
-    }
-
-    // Check if user exists
     if (!user) {
-      console.log('User not found');
+      console.log('User not found in the database.');
       return reply.code(404).send({ message: 'User not found' });
     }
 
-    // Log stored hashed password
-    console.log('Stored hashed password:', user.password);
+    console.log('User found. Stored hashed password:', user.password);
 
     // Compare the provided password with the stored hashed password
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Input password:', password); // Debugging
-    console.log('Stored hashed password:', user.password); // Debugging
-    console.log('Password match result:', isMatch); // Debugging
+    console.log('Password match result:', isMatch);
 
     if (!isMatch) {
+      console.log('Password mismatch. Login attempt failed.');
       return reply.code(400).send({ message: 'Invalid credentials' });
     }
 
-    // Generate JWT token
+    console.log('Generating JWT token for user...');
     const token = jwt.sign(
-      { id: user._id, role },
+      { id: user._id, role: 'user' },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // Respond with success message and token
+    console.log('JWT token generated successfully for user.');
     reply.send({ message: 'Login successful', token });
   } catch (err) {
-    console.error('Login error:', err.message);
+    console.error('Login error for user:', err.message);
+    reply.code(500).send({ error: err.message });
+  }
+};
+
+export const loginDriver = async (req, reply) => {
+  const { phone, password } = req.body;
+
+  console.log('Driver Login payload:', { phone, password });
+
+  try {
+    const driver = await Driver.findOne({ phone });
+
+    if (!driver) {
+      console.log('Driver not found in the database.');
+      return reply.code(404).send({ message: 'Driver not found' });
+    }
+
+    console.log('Driver found. Stored password:', driver.password);
+
+    // Direct plaintext comparison for driver passwords
+    const isMatch = password === driver.password;
+    console.log('Password match result:', isMatch);
+
+    if (!isMatch) {
+      console.log('Password mismatch. Login attempt failed.');
+      return reply.code(400).send({ message: 'Invalid credentials' });
+    }
+
+    console.log('Generating JWT token for driver...');
+    const token = jwt.sign(
+      { id: driver._id, role: 'driver' },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    console.log('JWT token generated successfully for driver.');
+    reply.send({ message: 'Login successful', token });
+  } catch (err) {
+    console.error('Login error for driver:', err.message);
     reply.code(500).send({ error: err.message });
   }
 };
